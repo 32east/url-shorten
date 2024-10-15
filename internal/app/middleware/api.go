@@ -1,0 +1,96 @@
+package middleware
+
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+	"time"
+	"url-short/internal/app/models"
+)
+
+type Spammer struct {
+	Addr      string
+	Count     int
+	TimeLimit time.Time
+}
+
+var APIAntiSpam = make(map[string]*Spammer)
+
+func API(path string, method string, exec func(w http.ResponseWriter, r *http.Request, response *models.Response, query *models.Response)) {
+	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		var response = make(models.Response)
+
+		defer func() {
+			var code = response["code"]
+
+			if code != nil {
+				w.WriteHeader(code.(int))
+
+				delete(response, "code")
+			}
+
+			var encoderErr = json.NewEncoder(w).Encode(response)
+
+			if encoderErr != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				w.Write([]byte("Internal server error"))
+			}
+		}()
+
+		var spammer, ok = APIAntiSpam[r.RemoteAddr]
+
+		if ok {
+			if time.Now().After((*spammer).TimeLimit) {
+				(*spammer).Count = 0
+			}
+
+			if (*spammer).Count >= 5 {
+				response["success"], response["reason"], response["code"] = false, "try again later", http.StatusTooEarly
+				return
+			}
+		} else if !ok {
+			APIAntiSpam[r.RemoteAddr] = &Spammer{
+				Addr:      r.RemoteAddr,
+				Count:     0,
+				TimeLimit: time.Now().Add(time.Second * 30),
+			}
+
+			spammer, ok = APIAntiSpam[r.RemoteAddr]
+		}
+
+		(*spammer).Count += 1
+		(*spammer).TimeLimit = time.Now().Add(time.Second * 30)
+
+		if r.Method != method {
+			response["success"], response["reason"], response["code"] = false, "method not allowed", 403
+			return
+		}
+
+		if r.Header.Get("Content-Type") != "application/json" {
+			response["success"], response["reason"], response["code"] = false, "content-type not allowed", 403
+			return
+		}
+
+		var query *models.Response
+		if method == "POST" {
+			var bRead, bReadErr = io.ReadAll(r.Body)
+
+			if bReadErr != nil {
+				response["success"], response["reason"], response["code"] = false, "internal server error", 500
+				return
+			}
+
+			var sRead = make(models.Response)
+			var dErr = json.Unmarshal(bRead, &sRead)
+
+			if dErr != nil {
+				response["success"], response["reason"], response["code"] = false, "internal server error", 500
+				return
+			}
+
+			query = &sRead
+		}
+
+		exec(w, r, &response, query)
+	})
+}
