@@ -9,11 +9,17 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
     <style>
 
+
         * {
             -webkit-box-sizing: border-box;
             -moz-box-sizing: border-box;
             box-sizing: border-box;
             font-family: "JetBrains Mono", monospace;
+        }
+
+        a, a:focus, a:hover, a:active {
+            text-decoration: none;
+            color: rgb(230, 230, 230);
         }
 
         body {
@@ -33,6 +39,7 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 600px;
         }
 
         input {
@@ -41,7 +48,7 @@
             border-radius: 5px;
             margin-right: 10px;
             font-size: 16px;
-            width: 66.66%;
+            width: 100%;
         }
 
         button {
@@ -122,8 +129,9 @@
                         const shortenedUrl = `${window.location.origin}/${data.url}`;
                         resultDiv.style["margin-top"] = "10px";
                         resultDiv.style.transition = 'opacity 0.5s';
-                        resultDiv.textContent = `Сокращенная ссылка: ${shortenedUrl}`;
-                        resultDiv.style.opacity = 1; // Показать результат
+                        resultDiv.innerHTML = `Сокращённая ссылка: <a href="${shortenedUrl}" id="shortenedLink">${shortenedUrl}</a><br>Ссылка была скопирована в буфер обмена.`;
+                        resultDiv.style.opacity = 1;
+                        navigator.clipboard.writeText(shortenedUrl);
                     } else {
                         throw new Error('Ошибка при генерации.');
                     }
@@ -132,13 +140,13 @@
                     resultDiv.style["margin-top"] = "10px";
                     resultDiv.style.transition = 'opacity 0.5s';
                     resultDiv.textContent = 'Ошибка при генерации.';
-                    resultDiv.style.opacity = 1; // Показать сообщение об ошибке
+                    resultDiv.style.opacity = 1;
                 });
         } else {
             resultDiv.style["margin-top"] = "10px";
             resultDiv.style.transition = 'opacity 0.5s';
             resultDiv.textContent = 'Пожалуйста, введите URL.';
-            resultDiv.style.opacity = 1; // Показать сообщение об ошибке
+            resultDiv.style.opacity = 1;
         }
     });
 </script>

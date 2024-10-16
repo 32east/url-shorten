@@ -18,8 +18,8 @@ func main() {
 	go func() {
 		stuff.RegisterEnvironment()
 		database.ConnectDatabase()
+		timer.Initialize()
 		go routes.Register()
-		go timer.Initialize()
 	}()
 
 	<-appClose
