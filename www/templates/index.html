@@ -109,6 +109,15 @@
         resultDiv.style.transition = 'opacity 0s';
         resultDiv.style.opacity = 0;
 
+        function copyToClipboard(text) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+        }
+
         if (urlInput) {
             fetch('/api/v1/shorten', {
                 method: 'POST',
@@ -131,10 +140,18 @@
                         resultDiv.style.transition = 'opacity 0.5s';
                         resultDiv.innerHTML = `Сокращённая ссылка: <a href="${shortenedUrl}" id="shortenedLink">${shortenedUrl}</a><br>Ссылка была скопирована в буфер обмена.`;
                         resultDiv.style.opacity = 1;
-                        navigator.clipboard.writeText(shortenedUrl);
+                        copyToClipboard(shortenedUrl);
+
                     } else {
                         throw new Error('Ошибка при генерации.');
                     }
+                })
+                .catch(error => {
+                    console.log(error);
+                    resultDiv.style["margin-top"] = "10px";
+                    resultDiv.style.transition = 'opacity 0.5s';
+                    resultDiv.textContent = 'Ошибка при генерации.';
+                    resultDiv.style.opacity = 1;
                 });
         } else {
             resultDiv.style["margin-top"] = "10px";
