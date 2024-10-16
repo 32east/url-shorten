@@ -135,12 +135,6 @@
                     } else {
                         throw new Error('Ошибка при генерации.');
                     }
-                })
-                .catch(error => {
-                    resultDiv.style["margin-top"] = "10px";
-                    resultDiv.style.transition = 'opacity 0.5s';
-                    resultDiv.textContent = 'Ошибка при генерации.';
-                    resultDiv.style.opacity = 1;
                 });
         } else {
             resultDiv.style["margin-top"] = "10px";
