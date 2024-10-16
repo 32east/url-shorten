@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 	"url-short/internal/app/models"
 )
@@ -31,7 +32,10 @@ func API(path string, method string, exec func(w http.ResponseWriter, r *http.Re
 			}
 		}()
 
-		var spammer, ok = APIAntiSpam[r.RemoteAddr]
+		var addr = r.RemoteAddr
+		var split = strings.Split(addr, ":")
+		var eAddr = split[0]
+		var spammer, ok = APIAntiSpam[eAddr]
 
 		if ok {
 			if time.Now().After((*spammer).TimeLimit) {
@@ -43,13 +47,13 @@ func API(path string, method string, exec func(w http.ResponseWriter, r *http.Re
 				return
 			}
 		} else if !ok {
-			APIAntiSpam[r.RemoteAddr] = &models.Spammer{
-				Addr:      r.RemoteAddr,
+			APIAntiSpam[eAddr] = &models.Spammer{
+				Addr:      eAddr,
 				Count:     0,
 				TimeLimit: time.Now().Add(time.Second * 30),
 			}
 
-			spammer, ok = APIAntiSpam[r.RemoteAddr]
+			spammer, ok = APIAntiSpam[eAddr]
 		}
 
 		(*spammer).Count += 1
