@@ -102,21 +102,21 @@
     <div id="result" class="result"></div>
 </div>
 <script>
+    function copyToClipboard(text) {
+        const tempInput = document.createElement('input');
+        tempInput.value = text;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempInput);
+    }
+
     document.getElementById('shortenBtn').addEventListener('click', function() {
         const urlInput = document.getElementById('urlInput').value;
         const resultDiv = document.getElementById('result');
 
         resultDiv.style.transition = 'opacity 0s';
         resultDiv.style.opacity = 0;
-
-        function copyToClipboard(text) {
-            const tempInput = document.createElement('input');
-            tempInput.value = text;
-            document.body.appendChild(tempInput);
-            tempInput.select();
-            document.execCommand('copy');
-            document.body.removeChild(tempInput);
-        }
 
         if (urlInput) {
             fetch('/api/v1/shorten', {
