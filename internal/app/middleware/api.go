@@ -8,13 +8,7 @@ import (
 	"url-short/internal/app/models"
 )
 
-type Spammer struct {
-	Addr      string
-	Count     int
-	TimeLimit time.Time
-}
-
-var APIAntiSpam = make(map[string]*Spammer)
+var APIAntiSpam = make(map[string]*models.Spammer)
 
 func API(path string, method string, exec func(w http.ResponseWriter, r *http.Request, response *models.Response, query *models.Response)) {
 	http.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
@@ -49,7 +43,7 @@ func API(path string, method string, exec func(w http.ResponseWriter, r *http.Re
 				return
 			}
 		} else if !ok {
-			APIAntiSpam[r.RemoteAddr] = &Spammer{
+			APIAntiSpam[r.RemoteAddr] = &models.Spammer{
 				Addr:      r.RemoteAddr,
 				Count:     0,
 				TimeLimit: time.Now().Add(time.Second * 30),

@@ -11,15 +11,16 @@ import (
 	"url-short/internal/app/models"
 )
 
-var count = 0
 var alphabet = "QWERTYUIOPASDFGHJKLZXCVBNM0123456789qwertyuiopasdfghjklxcvbnm"
+var count = 0
 var mut = &sync.Mutex{}
+var ctx = context.Background()
 
 const urlLen = 7
 
 func InitializeShorten() {
 	var val sql.NullInt64
-	var scanErr = database.Postgres.QueryRow(context.Background(), `select max(id) from urls;`).Scan(&val)
+	var scanErr = database.Postgres.QueryRow(ctx, `select max(id) from urls;`).Scan(&val)
 	if scanErr != nil {
 		log.Fatal("не удалось выявить максимальный id")
 	}
@@ -46,7 +47,7 @@ func Shorten(w http.ResponseWriter, r *http.Request, response *models.Response, 
 		constructed += string(val)
 	}
 
-	var _, execErr = database.Postgres.Exec(context.Background(), `insert into urls(small_url, full_url, ip_creator, created_at)
+	var _, execErr = database.Postgres.Exec(ctx, `insert into urls(small_url, full_url, ip_creator, created_at)
 values ($1, $2, $3, now())`, constructed, qUrl, r.RemoteAddr)
 
 	if execErr != nil {
